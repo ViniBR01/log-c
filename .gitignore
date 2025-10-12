@@ -56,3 +56,6 @@ dkms.conf
 .vscode/
 *~
 \#*\#
+
+# Ignore the nested submodules
+test/unity/
