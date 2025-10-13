@@ -1,3 +1,8 @@
+/* Implementation of the logging backend and log_message
+ * This file is the main compilation unit for the logger. Build it into
+ * a static library (liblogc.a) for reuse.
+ */
+
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>

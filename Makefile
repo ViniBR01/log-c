@@ -1,15 +1,19 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -O2
 SRC_DIR = src
-TARGET = log_c.out
-SRC = $(SRC_DIR)/log_c.c
+LIB_SRC = $(SRC_DIR)/log_c.c
+LIB_OBJ = $(LIB_SRC:.c=.o)
+LIB = liblogc.a
 
-all: $(TARGET)
+all: $(LIB)
 
-$(TARGET): $(SRC)
-	$(CC) $(CFLAGS) -o $@ $<
+$(LIB_OBJ): $(LIB_SRC)
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(LIB): $(LIB_OBJ)
+	ar rcs $@ $^
 
 clean:
-	rm -f $(TARGET)
+	rm -f $(LIB) $(LIB_OBJ)
 
 .PHONY: all clean
