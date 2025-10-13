@@ -28,7 +28,36 @@ typedef enum {
 #define LOG_LEVEL LOG_LEVEL_INFO
 #endif
 
+/* Logging API */
 void log_message(log_level_e l, const char* fmt, ...);
+
+/* Backend replacement API
+ *
+ * Consumers can provide their own backend implementation by filling in
+ * a `struct logc_backend` and calling `logc_set_backend()` at program
+ * initialization time (before spawning threads). The default backend
+ * uses the C standard library (vprintf/fwrite/putchar).
+ */
+#include <stdarg.h>
+#include <stddef.h>
+
+struct logc_backend {
+    /* Print formatted output using a va_list (safe for function pointers).
+     * Should behave like vprintf(): return number of chars printed or
+     * negative value on error. */
+    int (*vprintf)(const char *fmt, va_list ap);
+
+    /* Write raw bytes to the output sink (e.g., stdout). Returns number
+     * of bytes written. */
+    size_t (*write)(const char *buf, size_t len);
+
+    /* Put a single character to the output sink (like putchar). */
+    int (*putchar)(int ch);
+};
+
+/* Set/get the active backend. Not thread-safe; set at init time. */
+void logc_set_backend(const struct logc_backend *backend);
+const struct logc_backend *logc_get_backend(void);
 
 /* Public interface for logging */
 #if LOG_LEVEL >= LOG_LEVEL_CRITICAL
