@@ -1,16 +1,19 @@
 CC = gcc
 UNITY_SRC = unity/src/unity.c
-TEST_SRC = TestLogC.c
-TEST_TARGET = TestLogC.out
-C_FLAGS = -I../src -I./unity/src
+SRCS = ../src/log_c.c
+C_FLAGS = -I../src -I./unity/src -DLOGC_NO_MAIN
 
 .PHONY: all clean
 
-all: $(TEST_TARGET)
-	./$(TEST_TARGET)
+all: TestLogC.out TestBackendInjection.out
+	./TestLogC.out
+	./TestBackendInjection.out
 
-$(TEST_TARGET): $(TEST_SRC) $(UNITY_SRC)
+TestLogC.out: TestLogC.c $(UNITY_SRC) $(SRCS)
+	$(CC) $(C_FLAGS) $^ -o $@
+
+TestBackendInjection.out: TestBackendInjection.c $(UNITY_SRC) $(SRCS)
 	$(CC) $(C_FLAGS) $^ -o $@
 
 clean:
-	rm -f $(TEST_TARGET) *.o
+	rm -f *.out *.o TestLogC TestBackendInjection
