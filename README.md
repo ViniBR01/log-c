@@ -90,8 +90,4 @@ MIT License. See [LICENSE](LICENSE) for details.
 **Note:** This project is for educational purposes
 
 # TODO:
-
-- Re-factor the implementation c file to have a generic implementation that takes a concrete implementation as a callback function (?) in a way that the users of the log library can define the printf() function to be used, or any other destination for the logs.
-- Make a simple implementation that puts the log messages in a circular buffer in RAM memory, and use it for unity testing
-- Upgrade the Makefile to be used by user project build system with a direct call (?)
 - Add state to the logger and allow changing the state at run time
