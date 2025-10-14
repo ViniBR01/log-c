@@ -23,16 +23,24 @@ static const char* LOG_LEVEL_TO_C_STRING(log_level_e level) {
 /* Default putchar function that will be used by the printf library */
 static void (*custom_putchar)(char) = NULL;
 
-/* Implementation of _putchar required by the printf library */
-void _putchar(char character) {
+/* Implementation of _putchar required by the printf library.
+ * Declare as a weak symbol so that a board/application-specific
+ * implementation (for example the UART-backed _putchar in
+ * drivers/src/uart_terminal.c) can override this definition. */
+__attribute__((weak)) void _putchar(char character) {
     if (custom_putchar) {
         custom_putchar(character);
     } else {
-        /* Default behavior - write to stdout */
-        #ifdef _WIN32
+        /* Default behavior - write to stdout. If write() is not
+         * available on the target, this weak _putchar can be
+         * overridden by the application to provide a proper backend. */
+        #if defined(__unix__) || defined(__linux__)
+        while(write(1, &character, 1) < 0) {};
+        #elif defined(_WIN32)
         while(_write(1, &character, 1) < 0) {};
         #else
-        while(write(1, &character, 1) < 0) {};
+        /* No default platform write available; do nothing. */
+        (void)character;
         #endif
     }
 }
