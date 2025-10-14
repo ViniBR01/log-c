@@ -1,7 +1,7 @@
 CC = gcc
-UNITY_SRC = unity/src/unity.c
+UNITY_SRC = ../3rd-party/unity/src/unity.c
 LIB = ../liblogc.a
-C_FLAGS = -I../src -I./unity/src
+C_FLAGS = -I../src -I../3rd-party/unity/src
 
 .PHONY: all clean
 
