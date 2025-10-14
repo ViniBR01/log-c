@@ -1,7 +1,8 @@
-#include "unity.h"
-#include "log_c.h"
 #include <string.h>
 #include <stdio.h>
+
+#include "unity.h"
+#include "log_c.h"
 
 static char capture_buffer[512];
 static size_t capture_pos;

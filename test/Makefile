@@ -1,19 +1,22 @@
 CC = gcc
 UNITY_SRC = ../3rd-party/unity/src/unity.c
 LIB = ../liblogc.a
-C_FLAGS = -I../src -I../3rd-party/unity/src
+CFLAGS = -I../src -I../3rd-party/unity/src
 
-.PHONY: all clean
+.PHONY: all run clean
 
+# 'all' builds the test binaries but does not run them. Use 'run' to execute.
 all: TestLogC.out TestBackendInjection.out
+
+run: all
 	./TestLogC.out
 	./TestBackendInjection.out
 
 TestLogC.out: TestLogC.c $(UNITY_SRC) $(LIB)
-	$(CC) $(C_FLAGS) TestLogC.c $(UNITY_SRC) $(LIB) -o $@
+	$(CC) $(CFLAGS) TestLogC.c $(UNITY_SRC) $(LIB) -o $@
 
 TestBackendInjection.out: TestBackendInjection.c $(UNITY_SRC) $(LIB)
-	$(CC) $(C_FLAGS) TestBackendInjection.c $(UNITY_SRC) $(LIB) -o $@
+	$(CC) $(CFLAGS) TestBackendInjection.c $(UNITY_SRC) $(LIB) -o $@
 
 clean:
 	rm -f *.out *.o TestLogC TestBackendInjection

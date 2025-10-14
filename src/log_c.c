@@ -8,7 +8,7 @@
 #include <unistd.h> /* for write() */
 
 #include "log_c.h"
-#include "../3rd-party/printf/printf.h"
+#include "printf.h"
 
 #ifndef LOG_LEVEL_NAMES
 /* Users can override these default names with a compiler definition */
@@ -30,9 +30,9 @@ void _putchar(char character) {
     } else {
         /* Default behavior - write to stdout */
         #ifdef _WIN32
-        _write(1, &character, 1);
+        while(_write(1, &character, 1) < 0) {};
         #else
-        write(1, &character, 1);
+        while(write(1, &character, 1) < 0) {};
         #endif
     }
 }
@@ -49,12 +49,12 @@ void log_message(log_level_e level, const char* fmt, ...) {
     const char* level_str = LOG_LEVEL_TO_C_STRING(level);
 
     /* Print level prefix using printf library */
-    printf_("[%s] ", level_str);
+    printf("[%s] ", level_str);
     
     /* Print the actual message */
     va_list ap;
     va_start(ap, fmt);
-    vprintf_(fmt, ap);
+    vprintf(fmt, ap);
     va_end(ap);
     
     /* Add newline */

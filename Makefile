@@ -1,25 +1,35 @@
-CC = gcc
-CFLAGS = -Wall -Wextra -O2
-SRC_DIR = src
-PRINTF_DIR = 3rd-party/printf
-LIB_SRC = $(SRC_DIR)/log_c.c
-PRINTF_SRC = $(PRINTF_DIR)/printf.c
-LIB_OBJ = $(LIB_SRC:.c=.o)
-PRINTF_OBJ = $(PRINTF_SRC:.c=.o)
-LIB = liblogc.a
+CC         := gcc
+CFLAGS     := -Wall -Wextra -O2
+
+SRC_DIR    := src
+LIB_SRC    := $(SRC_DIR)/log_c.c
+LIB_OBJ    := $(LIB_SRC:.c=.o)
+LIB        := liblogc.a
+
+PRINTF_DIR := 3rd-party/printf
+PRINTF_SRC := $(PRINTF_DIR)/printf.c
+PRINTF_OBJ := $(PRINTF_SRC:.c=.o)
+
+C_INCLUDES := -I$(SRC_DIR) -I$(PRINTF_DIR)
+
+TEST_DIR   := test
+
+.PHONY: all test clean
 
 all: $(LIB)
 
 $(LIB_OBJ): $(LIB_SRC)
-	$(CC) $(CFLAGS) -I$(PRINTF_DIR) -c -o $@ $<
+	$(CC) $(CFLAGS) $(C_INCLUDES) -c -o $@ $<
 
 $(PRINTF_OBJ): $(PRINTF_SRC)
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) $(C_INCLUDES) -c -o $@ $<
 
 $(LIB): $(LIB_OBJ) $(PRINTF_OBJ)
 	ar rcs $@ $^
 
+test: $(LIB)
+	$(MAKE) -C $(TEST_DIR) run
+
 clean:
 	rm -f $(LIB) $(LIB_OBJ) $(PRINTF_OBJ)
-
-.PHONY: all clean
+	-$(MAKE) -C $(TEST_DIR) clean
