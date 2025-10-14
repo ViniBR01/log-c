@@ -1,3 +1,6 @@
-[submodule "test/unity"]
-	path = test/unity
+[submodule "3rd-party/printf"]
+	path = 3rd-party/printf
+	url = git@github.com:ViniBR01/printf.git
+[submodule "3rd-party/unity"]
+	path = 3rd-party/unity
 	url = git@github.com:ViniBR01/Unity.git
