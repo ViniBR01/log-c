@@ -10,14 +10,18 @@
 #include "log_c.h"
 #include "printf.h"
 
-#ifndef LOG_LEVEL_NAMES
-/* Users can override these default names with a compiler definition */
-#define LOG_LEVEL_NAMES {"off", "critical", "error", "warning", "info", "debug"}
-#endif
-
+/* Simplified implementation that avoids array initialization issues
+ * in bare-metal environments without full C runtime */
 static const char* LOG_LEVEL_TO_C_STRING(log_level_e level) {
-    static const char* level_string_names[LOG_LEVEL_MAX + 1] = LOG_LEVEL_NAMES;
-    return level_string_names[level];
+    switch(level) {
+        case LOG_LEVEL_OFF:      return "off";
+        case LOG_LEVEL_CRITICAL: return "critical";
+        case LOG_LEVEL_ERROR:    return "error";
+        case LOG_LEVEL_WARNING:  return "warning";
+        case LOG_LEVEL_INFO:     return "info";
+        case LOG_LEVEL_DEBUG:    return "debug";
+        default:                 return "unknown";
+    }
 }
 
 /* Default putchar function that will be used by the printf library */
