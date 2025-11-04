@@ -6,11 +6,7 @@ LIB_SRC    := $(SRC_DIR)/log_c.c
 LIB_OBJ    := $(LIB_SRC:.c=.o)
 LIB        := liblogc.a
 
-PRINTF_DIR := 3rd-party/printf
-PRINTF_SRC := $(PRINTF_DIR)/printf.c
-PRINTF_OBJ := $(PRINTF_SRC:.c=.o)
-
-C_INCLUDES := -I$(SRC_DIR) -I$(PRINTF_DIR)
+C_INCLUDES := -I$(SRC_DIR)
 
 TEST_DIR   := test
 
@@ -21,15 +17,12 @@ all: $(LIB)
 $(LIB_OBJ): $(LIB_SRC)
 	$(CC) $(CFLAGS) $(C_INCLUDES) -c -o $@ $<
 
-$(PRINTF_OBJ): $(PRINTF_SRC)
-	$(CC) $(CFLAGS) $(C_INCLUDES) -c -o $@ $<
-
-$(LIB): $(LIB_OBJ) $(PRINTF_OBJ)
+$(LIB): $(LIB_OBJ)
 	ar rcs $@ $^
 
 test: $(LIB)
 	$(MAKE) -C $(TEST_DIR) run
 
 clean:
-	rm -f $(LIB) $(LIB_OBJ) $(PRINTF_OBJ)
+	rm -f $(LIB) $(LIB_OBJ)
 	-$(MAKE) -C $(TEST_DIR) clean
