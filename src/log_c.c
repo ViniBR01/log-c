@@ -243,18 +243,63 @@ static size_t format_string(char* buffer, size_t buf_size, const char* fmt,
 }
 
 /*=============================================================================
- * Backend API
+ * Backend API and Runtime State
  *============================================================================*/
 
-/* Output callback function pointer */
-static log_output_callback_t output_callback = NULL;
+/**
+ * @brief Logging context structure (singleton pattern)
+ * 
+ * Contains all runtime state for the logging system. Designed to be extended
+ * in the future with additional features like statistics, buffering, etc.
+ */
+typedef struct {
+    log_output_callback_t output_callback;    /**< Output callback function */
+    volatile log_level_e runtime_level;        /**< Current runtime log level (volatile for thread visibility) */
+    log_level_e compile_time_max;              /**< Maximum level compiled into binary */
+} log_context_t;
+
+/**
+ * @brief Global logging context (static singleton)
+ * 
+ * Initialized with:
+ * - No output callback (must be set by user)
+ * - Runtime level = compile-time level
+ * - Compile-time max = LOG_LEVEL define
+ */
+static log_context_t g_log_ctx = {
+    .output_callback = NULL,
+    .runtime_level = LOG_LEVEL,
+    .compile_time_max = LOG_LEVEL
+};
 
 void log_set_output_callback(log_output_callback_t callback) {
-    output_callback = callback;
+    g_log_ctx.output_callback = callback;
 }
 
 bool log_is_output_configured(void) {
-    return (output_callback != NULL);
+    return (g_log_ctx.output_callback != NULL);
+}
+
+void log_set_level(log_level_e level) {
+    /* Validate: cannot set higher than compile-time maximum */
+    if (level > g_log_ctx.compile_time_max) {
+        level = g_log_ctx.compile_time_max;
+    }
+    
+    /* Also clamp to LOG_LEVEL_MAX for safety */
+    if (level > LOG_LEVEL_MAX) {
+        level = LOG_LEVEL_MAX;
+    }
+    
+    g_log_ctx.runtime_level = level;
+}
+
+log_level_e log_get_level(void) {
+    return g_log_ctx.runtime_level;
+}
+
+log_level_e log_get_compile_time_level(void) {
+    return g_log_ctx.compile_time_max;
 }
 
 /*=============================================================================
@@ -298,7 +343,12 @@ static size_t format_level_prefix(char* buffer, size_t buf_size, log_level_e lev
 
 void log_message(log_level_e level, const char* fmt, ...) {
     /* Check if output is configured */
-    if (output_callback == NULL) {
+    if (g_log_ctx.output_callback == NULL) {
+        return;
+    }
+    
+    /* Runtime filtering: Skip if level exceeds runtime threshold */
+    if (level > g_log_ctx.runtime_level) {
         return;
     }
     
@@ -326,5 +376,5 @@ void log_message(log_level_e level, const char* fmt, ...) {
     }
     
     /* Output via callback */
-    output_callback(buffer, pos);
+    g_log_ctx.output_callback(buffer, pos);
 }

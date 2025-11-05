@@ -99,6 +99,62 @@ void log_set_output_callback(log_output_callback_t callback);
  */
 bool log_is_output_configured(void);
 
+/* Runtime Log Level Control
+ *
+ * These functions enable dynamic control of log verbosity at runtime.
+ * The runtime level filters messages within the compile-time maximum.
+ *
+ * Example:
+ * @code
+ * // Compiled with LOG_LEVEL=LOG_LEVEL_DEBUG (all levels included)
+ * log_set_level(LOG_LEVEL_INFO);  // Suppress debug messages at runtime
+ * loginfo("This prints");          // ✓ Compiled in, runtime allows
+ * logdebug("This is suppressed");  // ✗ Compiled in, runtime blocks
+ * 
+ * log_set_level(LOG_LEVEL_DEBUG); // Re-enable debug messages
+ * logdebug("Now this prints");     // ✓ Compiled in, runtime allows
+ * @endcode
+ */
+
+/**
+ * @brief Set the runtime log level
+ * 
+ * Controls which log messages are output at runtime. Messages with a level
+ * higher than the runtime level will be discarded before formatting.
+ * 
+ * The runtime level cannot exceed the compile-time maximum (LOG_LEVEL).
+ * If you try to set a level higher than compiled in, it will be clamped
+ * to the compile-time maximum.
+ * 
+ * This function is safe to call from main code. For thread-safe operation
+ * in RTOS environments, ensure exclusive access during the call.
+ * 
+ * @param level New runtime log level (will be clamped to compile-time max)
+ */
+void log_set_level(log_level_e level);
+
+/**
+ * @brief Get the current runtime log level
+ * 
+ * @return Current runtime log level
+ */
+log_level_e log_get_level(void);
+
+/**
+ * @brief Get the compile-time maximum log level
+ * 
+ * This returns the maximum level that was compiled into the binary via
+ * the LOG_LEVEL define. You cannot set the runtime level higher than this.
+ * 
+ * This is useful for:
+ * - Validating runtime level changes
+ * - Displaying available log levels in UI/CLI
+ * - Debugging build configuration
+ * 
+ * @return Compile-time maximum log level (value of LOG_LEVEL at compile time)
+ */
+log_level_e log_get_compile_time_level(void);
+
 /* Public interface for logging */
 #if LOG_LEVEL >= LOG_LEVEL_CRITICAL
 #ifndef logcritical

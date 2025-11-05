@@ -138,6 +138,65 @@ Available levels:
 
 Compile-time filtering completely eliminates unused log calls from the binary, saving code space.
 
+## Runtime Log Level Control
+
+**New Feature**: Dynamically control log verbosity without recompilation!
+
+The library now supports runtime filtering in addition to compile-time optimization. This enables you to change which messages are output without reflashing firmware.
+
+### How It Works
+
+- **Compile-time level** (`LOG_LEVEL`): Maximum level compiled into binary (eliminates code)
+- **Runtime level** (`log_set_level()`): Current filtering threshold (can be changed anytime)
+
+```c
+// Compile with DEBUG to have maximum flexibility
+#define LOG_LEVEL LOG_LEVEL_DEBUG
+#include "log_c.h"
+
+int main(void) {
+    log_set_output_callback(my_output);
+    
+    // Start with INFO level
+    log_set_level(LOG_LEVEL_INFO);
+    loginfo("Prints");      // ✓ Allowed
+    logdebug("Hidden");     // ✗ Suppressed at runtime
+    
+    // Enable debug dynamically (no recompilation!)
+    log_set_level(LOG_LEVEL_DEBUG);
+    logdebug("Now prints"); // ✓ Now allowed
+    
+    // Reduce verbosity
+    log_set_level(LOG_LEVEL_ERROR);
+    loginfo("Hidden");      // ✗ Suppressed
+    logerror("Prints");     // ✓ Still allowed
+}
+```
+
+### API Functions
+
+```c
+// Set runtime log level (clamped to compile-time max)
+void log_set_level(log_level_e level);
+
+// Get current runtime level
+log_level_e log_get_level(void);
+
+// Get compile-time maximum level
+log_level_e log_get_compile_time_level(void);
+```
+
+### Use Cases
+
+- **Debugging**: Enable debug logs without reflashing
+- **Production**: Reduce verbosity after initialization
+- **Interactive control**: Change levels via CLI commands
+- **Performance**: Minimize overhead in critical sections
+
+### Best Practice
+
+Compile with `LOG_LEVEL_DEBUG` for development builds to have maximum runtime flexibility, then compile with a lower level for production to save code space.
+
 ## Format Specifiers
 
 Supported format specifiers:
