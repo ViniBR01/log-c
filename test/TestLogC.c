@@ -107,6 +107,71 @@ void test_EndsWithNewline(void) {
     TEST_ASSERT_EQUAL_CHAR('\n', test_buffer[test_length - 1]);
 }
 
+void test_RuntimeFiltering_DefaultLevel(void) {
+    // Default level should be compile-time level
+    TEST_ASSERT_EQUAL(LOG_LEVEL, log_get_level());
+    TEST_ASSERT_EQUAL(LOG_LEVEL, log_get_compile_time_level());
+}
+
+void test_RuntimeFiltering_CanSuppress(void) {
+    log_set_level(LOG_LEVEL_INFO);
+    
+    // Info should print
+    test_length = 0;
+    loginfo("Should print");
+    TEST_ASSERT_GREATER_THAN(0, test_length);
+    
+    // Debug should be suppressed (if compiled in)
+    test_length = 0;
+    logdebug("Should not print");
+    #if LOG_LEVEL >= LOG_LEVEL_DEBUG
+    TEST_ASSERT_EQUAL(0, test_length);  // Compiled in but suppressed
+    #else
+    // Not compiled in, so test_length stays 0 anyway
+    TEST_ASSERT_EQUAL(0, test_length);
+    #endif
+}
+
+void test_RuntimeFiltering_CanReenable(void) {
+    log_set_level(LOG_LEVEL_INFO);
+    
+    test_length = 0;
+    logdebug("Suppressed");
+    #if LOG_LEVEL >= LOG_LEVEL_DEBUG
+    TEST_ASSERT_EQUAL(0, test_length);  // Suppressed
+    #endif
+    
+    log_set_level(LOG_LEVEL_DEBUG);
+    test_length = 0;
+    logdebug("Now prints");
+    #if LOG_LEVEL >= LOG_LEVEL_DEBUG
+    TEST_ASSERT_GREATER_THAN(0, test_length);  // Now prints
+    #endif
+}
+
+void test_RuntimeFiltering_ClampsToMax(void) {
+    // Try to set above compile-time max (should clamp)
+    log_set_level(LOG_LEVEL_DEBUG + 1);
+    TEST_ASSERT_LESS_OR_EQUAL(LOG_LEVEL, log_get_level());
+    
+    // Should clamp to compile-time max
+    TEST_ASSERT_EQUAL(LOG_LEVEL, log_get_level());
+}
+
+void test_RuntimeFiltering_ErrorAlwaysPrints(void) {
+    // Even if we set to OFF, errors should print if compiled in
+    log_set_level(LOG_LEVEL_ERROR);
+    
+    test_length = 0;
+    logerror("Error message");
+    TEST_ASSERT_GREATER_THAN(0, test_length);
+    
+    // But info should be suppressed
+    test_length = 0;
+    loginfo("Info suppressed");
+    TEST_ASSERT_EQUAL(0, test_length);
+}
+
 int main(void) {
     UNITY_BEGIN();
     RUN_TEST(test_LogLevel_Info);
@@ -122,5 +187,10 @@ int main(void) {
     RUN_TEST(test_Formatting_Multiple);
     RUN_TEST(test_Formatting_PercentEscape);
     RUN_TEST(test_EndsWithNewline);
+    RUN_TEST(test_RuntimeFiltering_DefaultLevel);
+    RUN_TEST(test_RuntimeFiltering_CanSuppress);
+    RUN_TEST(test_RuntimeFiltering_CanReenable);
+    RUN_TEST(test_RuntimeFiltering_ClampsToMax);
+    RUN_TEST(test_RuntimeFiltering_ErrorAlwaysPrints);
     return UNITY_END();
 }
